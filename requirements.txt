@@ -1,0 +1,7 @@
+numpy
+pandas
+scikit-learn
+joblib
+sentence-transformers==2.2.2
+flask
+flask_api

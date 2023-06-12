@@ -3,5 +3,6 @@ pandas
 scikit-learn
 joblib
 sentence-transformers==2.2.2
+xgboost
 flask
 flask_api

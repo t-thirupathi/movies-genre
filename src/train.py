@@ -22,7 +22,8 @@ import xgboost as xgb
 
 def preprocess_data(data_file):
     df = pd.read_csv(data_file, usecols=['overview', 'genres'], low_memory=False)
-    # df = df.head(500)
+    # Comment below line to train on all data. Takes about 15 mins
+    df = df.head(1000)
     df = df.dropna()
 
     # Clean up the genres column

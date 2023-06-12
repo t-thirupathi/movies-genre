@@ -6,15 +6,15 @@ from pathlib import Path
 from flask import Flask, request, jsonify
 from flask_api import status
 from sklearn.preprocessing import MultiLabelBinarizer
+from train import load_config
 
+config = load_config()
 app = Flask(__name__)
-FILE_PATH = Path(__file__).resolve().parent
-MODELS_DIR = FILE_PATH / '../models'
 
 # Load the models
-mlb = joblib.load(MODELS_DIR / 'mlb.joblib')
-encoder_model = joblib.load(MODELS_DIR / 'encoder_model.joblib')
-classifier_model = joblib.load(MODELS_DIR / 'classifier_model.joblib')
+mlb = joblib.load(config['MODELS_DIR'] / 'mlb.joblib')
+encoder_model = joblib.load(config['MODELS_DIR'] / 'encoder_model.joblib')
+classifier_model = joblib.load(config['MODELS_DIR'] / 'classifier_model.joblib')
 
 @app.route('/', methods=['POST'])
 def predict():

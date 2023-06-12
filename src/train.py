@@ -2,7 +2,7 @@
 
 import pandas as pd
 import numpy as np
-import ast, joblib
+import ast, json, joblib
 from pathlib import Path
 from collections import Counter
 
@@ -19,16 +19,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sentence_transformers import SentenceTransformer
 import xgboost as xgb
 
-FILE_PATH = Path(__file__).resolve().parent
-DATA_DIR = FILE_PATH / '../data'
-MODELS_DIR = FILE_PATH / '../models'
-print(DATA_DIR, MODELS_DIR)
-GENRE_FREQ_THRESHOLD = 10
 
 def preprocess_data(data_file):
-    df = pd.read_csv(data_file, low_memory=False)
-    #df = df.head(1000)
-    df = df[['overview', 'genres']]
+    df = pd.read_csv(data_file, usecols=['overview', 'genres'], low_memory=False)
+    # df = df.head(500)
     df = df.dropna()
 
     # Clean up the genres column
@@ -37,7 +31,7 @@ def preprocess_data(data_file):
 
     # Filter out rare genres
     counter = Counter([genre for sublist in df['genres'] for genre in sublist])
-    popular_genres = [genre for genre, count in counter.items() if count >= GENRE_FREQ_THRESHOLD]
+    popular_genres = [genre for genre, count in counter.items() if count >= config['GENRE_FREQ_THRESHOLD']]
     
     df['genres'] = df['genres'].apply(lambda genres: [g for g in genres if g in popular_genres])
     
@@ -51,10 +45,10 @@ def preprocess_data(data_file):
                               columns=mlb.classes_,
                               index=df.index)
     
-    joblib.dump(mlb, MODELS_DIR / 'mlb.joblib')
+    joblib.dump(mlb, config['MODELS_DIR'] / 'mlb.joblib')
     
     df = df.join(df_genres)
-    df.to_csv(DATA_DIR / 'processed_movies_metadata.csv', index=False)
+    df.to_csv(config['DATA_DIR'] / 'processed_movies_metadata.csv', index=False)
 
     X = df['overview']
     y = df.drop(['overview'], axis=1)
@@ -82,16 +76,41 @@ def train_model(X_train, y_train, encoder, multilabeler, estimator):
     return (encoder_model, classifier_model)
 
 
+def load_config():
+    global config
+    FILE_DIR = Path(__file__).resolve().parent
+
+    try:
+        with open(FILE_DIR / 'config.json') as f:
+            config = json.load(f)
+    except ValueError:
+        sys.exit('Invalid config file')
+    
+    if 'DATA_DIR' not in config or config['DATA_DIR'] == '':
+        config['DATA_DIR'] = FILE_DIR / '../data'
+    else:
+        config['DATA_DIR'] = Path(config['DATA_DIR']).resolve()
+
+    if 'MODELS_DIR' not in config or config['MODELS_DIR'] == '':
+        config['MODELS_DIR'] = FILE_DIR / '../models'
+    else:
+        config['MODELS_DIR'] = Path(config['MODELS_DIR']).resolve()
+
+    assert config['DATA_DIR'].exists()
+    assert config['MODELS_DIR'].exists()
+
+    return config
+
+
 def main():
-    assert DATA_DIR.exists()
-    assert MODELS_DIR.exists()
+    load_config()
 
     print('Preprocessing data...')
-    X_train, X_test, y_train, y_test = preprocess_data(DATA_DIR / 'movies_metadata.csv')
+    X_train, X_test, y_train, y_test = preprocess_data(config['DATA_DIR'] / 'movies_metadata.csv')
 
     
     print('Training model...')
-    encoder = 'TfIdf'
+    encoder = 'SentenceTransformer'
     multilabeler = OneVsRestClassifier
     estimator = DecisionTreeClassifier()
     
@@ -103,9 +122,9 @@ def main():
     print("Hamming Loss: %.4f"%(hamming_loss(y_test, y_pred)))
 
     print('Saving model...')
-    joblib.dump(encoder_model, MODELS_DIR / 'encoder_model.joblib')
-    joblib.dump(classifier_model, MODELS_DIR / 'classifier_model.joblib')
-    
+    joblib.dump(encoder_model, config['MODELS_DIR'] / 'encoder_model.joblib')
+    joblib.dump(classifier_model, config['MODELS_DIR'] / 'classifier_model.joblib')
+
 
 if __name__ == '__main__':
     main()

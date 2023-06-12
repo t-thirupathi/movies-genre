@@ -27,7 +27,7 @@ GENRE_FREQ_THRESHOLD = 10
 
 def preprocess_data(data_file):
     df = pd.read_csv(data_file, low_memory=False)
-    df = df.head(500)
+    #df = df.head(1000)
     df = df[['overview', 'genres']]
     df = df.dropna()
 

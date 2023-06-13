@@ -2,11 +2,10 @@
 # coding: utf-8
 
 import joblib
-from pathlib import Path
 from flask import Flask, request, jsonify
 from flask_api import status
 from sklearn.preprocessing import MultiLabelBinarizer
-from train import load_config
+from config import load_config
 
 config = load_config()
 app = Flask(__name__)

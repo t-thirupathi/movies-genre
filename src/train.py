@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-
 import pandas as pd
 import numpy as np
-import ast, json, joblib
-from pathlib import Path
+import ast, joblib
 from collections import Counter
 
 from sklearn.model_selection import train_test_split
@@ -19,6 +16,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sentence_transformers import SentenceTransformer
 import xgboost as xgb
 
+from config import load_config
 
 def preprocess_data(data_file):
     df = pd.read_csv(data_file, usecols=['overview', 'genres'], low_memory=False)
@@ -77,34 +75,9 @@ def train_model(X_train, y_train, encoder, multilabeler, estimator):
     return (encoder_model, classifier_model)
 
 
-def load_config():
-    global config
-    FILE_DIR = Path(__file__).resolve().parent
-
-    try:
-        with open(FILE_DIR / 'config.json') as f:
-            config = json.load(f)
-    except ValueError:
-        sys.exit('Invalid config file')
-    
-    if 'DATA_DIR' not in config or config['DATA_DIR'] == '':
-        config['DATA_DIR'] = FILE_DIR / '../data'
-    else:
-        config['DATA_DIR'] = Path(config['DATA_DIR']).resolve()
-
-    if 'MODELS_DIR' not in config or config['MODELS_DIR'] == '':
-        config['MODELS_DIR'] = FILE_DIR / '../models'
-    else:
-        config['MODELS_DIR'] = Path(config['MODELS_DIR']).resolve()
-
-    assert config['DATA_DIR'].exists()
-    assert config['MODELS_DIR'].exists()
-
-    return config
-
-
 def main():
-    load_config()
+    global config
+    config = load_config()
 
     print('Preprocessing data...')
     X_train, X_test, y_train, y_test = preprocess_data(config['DATA_DIR'] / 'movies_metadata.csv')

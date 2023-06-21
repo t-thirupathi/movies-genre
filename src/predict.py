@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import joblib
 from flask import Flask, request, jsonify
 from flask_api import status

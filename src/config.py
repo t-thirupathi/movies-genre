@@ -1,5 +1,6 @@
 from pathlib import Path
 import json 
+import sys
 
 def load_config():
     global config

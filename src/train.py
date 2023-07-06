@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
-import ast, joblib
+import ast
+import joblib
 from collections import Counter
-
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.pipeline import Pipeline
@@ -15,10 +15,17 @@ from sklearn.metrics import hamming_loss, accuracy_score, f1_score, classificati
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sentence_transformers import SentenceTransformer
 import xgboost as xgb
-
 from config import load_config
 
-def preprocess_data(data_file):
+def preprocess_data(data_file: str) -> tuple:
+    """
+    Preprocesses the data file and returns the preprocessed data.
+    Args:
+        data_file: The path to the data file.
+
+    Returns:
+        A tuple containing the preprocessed data: X_train, X_test, y_train, y_test.
+    """
     df = pd.read_csv(data_file, usecols=['overview', 'genres'], low_memory=False)
     # Comment below line to train on all data. Takes about 15 mins
     df = df.head(1000)
@@ -62,8 +69,20 @@ def preprocess_data(data_file):
     return X_train, X_test, y_train, y_test
 
 
-def train_model(X_train, y_train, encoder, multilabeler, estimator):
-    if encoder == 'TfIdf':
+def train_model(X_train: pd.Series, y_train: pd.DataFrame, encoder: str, multilabeler: type, estimator: type) -> tuple:
+    """
+    Trains a model using the provided data and parameters.
+    Args:
+        X_train: The training data.
+        y_train: The target labels.
+        encoder: The encoder type.
+        multilabeler: The multilabel classifier type.
+        estimator: The estimator type.
+
+    Returns:
+        A tuple containing the trained encoder and classifier models.
+    """
+    if encoder =='TfIdf':
         encoder_model = TfidfVectorizer().fit(X_train)
     elif encoder == 'SentenceTransformer':
         encoder_model = SentenceTransformer('all-MiniLM-L6-v2')

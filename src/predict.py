@@ -8,12 +8,17 @@ config = load_config()
 app = Flask(__name__)
 
 # Load the models
-mlb = joblib.load(config['MODELS_DIR'] / 'mlb.joblib')
+mlb: MultiLabelBinarizer = joblib.load(config['MODELS_DIR'] / 'mlb.joblib')
 encoder_model = joblib.load(config['MODELS_DIR'] / 'encoder_model.joblib')
 classifier_model = joblib.load(config['MODELS_DIR'] / 'classifier_model.joblib')
 
 @app.route('/', methods=['POST'])
-def predict():
+def predict() -> str:
+    """
+    Endpoint to predict the genre based on the provided overview text.
+    Returns:
+        A JSON response containing the predicted genre.
+    """
     overview = request.form.get('overview')
     if not overview:
         return 'overview missing', status.HTTP_400_BAD_REQUEST

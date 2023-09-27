@@ -1,4 +1,7 @@
-Machine learning model to predict genre of movies based on the text overview
+End to End ML solution and deployment example
+
+1. Machine learning model to predict genre of movies based on the text overview
+2. Deployment using Docker
 
 Steps to run:
 1. pip install -r requirements.txt
